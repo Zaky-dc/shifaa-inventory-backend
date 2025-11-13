@@ -49,6 +49,28 @@ app.get('/contagem', async (req, res) => {
     res.status(500).json({ error: 'Erro ao buscar contagem.' });
   }
 });
+
+app.get('/datas', async (req, res) => {
+  try {
+    const datas = await Contagem.distinct('data');
+    res.status(200).json(datas.sort().reverse()); // mais recentes primeiro
+  } catch (err) {
+    console.error('Erro ao buscar datas:', err.message);
+    res.status(500).json({ error: 'Erro ao buscar datas.' });
+  }
+});
+
+app.get('/contagem/:data', async (req, res) => {
+  try {
+    const dados = await Contagem.find({ data: req.params.data });
+    res.status(200).json(dados);
+  } catch (err) {
+    console.error('Erro ao buscar contagem por data:', err.message);
+    res.status(500).json({ error: 'Erro ao buscar contagem por data.' });
+  }
+});
+
+
 const PORT = process.env.PORT || 4000;
 // Porta dinâmica para Render
 const server = app.listen(PORT, () => {
