@@ -30,6 +30,40 @@ const ContagemSchema = new mongoose.Schema({
 
 const Contagem = mongoose.model('Contagem', ContagemSchema);
 
+// Schema de Armazém
+const ArmazemSchema = new mongoose.Schema({
+  nome: { type: String, required: true, unique: true },
+});
+
+const Armazem = mongoose.model('Armazem', ArmazemSchema);
+
+// Criar novo armazém
+app.post('/armazens', async (req, res) => {
+  try {
+    const { nome } = req.body;
+    if (!nome) return res.status(400).json({ error: "Nome do armazém é obrigatório." });
+
+    const novo = new Armazem({ nome });
+    await novo.save();
+    res.status(201).json({ message: "Armazém criado com sucesso!", armazem: novo });
+  } catch (err) {
+    console.error("Erro ao criar armazém:", err.message);
+    res.status(500).json({ error: "Erro ao criar armazém." });
+  }
+});
+
+// Listar armazéns
+app.get('/armazens', async (req, res) => {
+  try {
+    const armazens = await Armazem.find().sort({ nome: 1 });
+    res.status(200).json(armazens.map(a => a.nome));
+  } catch (err) {
+    console.error("Erro ao buscar armazéns:", err.message);
+    res.status(500).json({ error: "Erro ao buscar armazéns." });
+  }
+});
+
+
 // 📥 Salvar contagem
 app.post('/contagem', async (req, res) => {
   try {
