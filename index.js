@@ -118,6 +118,27 @@ app.get('/armazens', async (req, res) => {
     res.status(500).json({ error: 'Erro ao buscar armazéns.' });
   }
 });
+app.get('/contagem', async (req, res) => {
+  try {
+    const filtro = {};
+    if (req.query.armazem) filtro.armazem = req.query.armazem;
+    const dados = await Contagem.find(filtro).sort({ data: -1 });
+    res.status(200).json(dados);
+  } catch (err) {
+    console.error('Erro ao buscar contagem:', err.message);
+    res.status(500).json({ error: 'Erro ao buscar contagem.' });
+  }
+});
+app.delete('/contagem/:data', async (req, res) => {
+  try {
+    const resultado = await Contagem.deleteMany({ data: req.params.data });
+    res.status(200).json({ message: `Contagens de ${req.params.data} apagadas.` });
+  } catch (err) {
+    console.error('Erro ao apagar contagem:', err.message);
+    res.status(500).json({ error: 'Erro ao apagar contagem.' });
+  }
+});
+
 
 // 🚀 Inicialização do servidor
 const PORT = process.env.PORT || 4000;
