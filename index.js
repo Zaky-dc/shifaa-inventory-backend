@@ -67,8 +67,24 @@ app.get('/armazens', async (req, res) => {
 // 📥 Salvar contagem
 app.post('/contagem', async (req, res) => {
   try {
-    await Contagem.insertMany(req.body);
-    res.status(200).json({ message: 'Contagem salva com sucesso!' });
+    const dados = req.body;
+
+    if (!Array.isArray(dados) || dados.length === 0) {
+      return res.status(400).json({ error: "Dados inválidos ou vazios." });
+    }
+
+    const { data, armazem } = dados[0];
+    if (!data || !armazem) {
+      return res.status(400).json({ error: "Data e armazém são obrigatórios." });
+    }
+
+    // Remove contagens anteriores para mesma data e armazém
+    await Contagem.deleteMany({ data, armazem });
+
+    // Insere nova contagem
+    await Contagem.insertMany(dados);
+
+    res.status(200).json({ message: `Contagem de ${data} (${armazem}) salva com sucesso!` });
   } catch (err) {
     console.error('Erro ao salvar contagem:', err.message);
     res.status(500).json({ error: 'Erro ao salvar contagem.' });
@@ -89,8 +105,23 @@ app.get('/contagem', async (req, res) => {
 // 📅 Buscar datas disponíveis
 app.get('/datas', async (req, res) => {
   try {
-    const datas = await Contagem.distinct('data');
-    res.status(200).json(datas.sort().reverse());
+    const registros = await Contagem.aggregate([
+      {
+        $group: {
+          _id: { data: "$data", armazem: "$armazem" },
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          data: "$_id.data",
+          armazem: "$_id.armazem"
+        }
+      },
+      { $sort: { data: -1 } }
+    ]);
+
+    res.status(200).json(registros);
   } catch (err) {
     console.error('Erro ao buscar datas:', err.message);
     res.status(500).json({ error: 'Erro ao buscar datas.' });
