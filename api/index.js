@@ -1,13 +1,13 @@
 //import dotenv from "dotenv";
 //import express from "express";
-import cors from "cors";
+//import cors from "cors";
 import bodyParser from "body-parser";
 
 //dotenv.config();
 
 //const app = express();
-app.use(cors());
-app.use(bodyParser.json());
+//app.use(cors());
+//app.use(bodyParser.json());
 
 // Importa rotas simulando Vercel
 import contagemRouter from "./api/contagem.js";
