@@ -2,12 +2,9 @@
   "name": "inventario-vercel",
   "version": "1.0.0",
   "private": true,
-  "scripts": {
-    "dev": "vercel dev",
-    "build": "vercel build",
-    "deploy": "vercel deploy"
-  },
+  "type": "module",
   "dependencies": {
     "mongoose": "^8.19.3"
   }
 }
+
