@@ -1,4 +1,23 @@
 {
-  "version": 2
+  "version": 2,
+  "headers": [
+    {
+      "source": "/api/(.*)", // Aplica-se a todos os endpoints em /api/
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "https://shifaa-inventory.vercel.app" // Apenas sua origem de frontend
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Authorization"
+        }
+      ]
+    }
+  ]
 }
 
