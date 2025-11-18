@@ -1,9 +1,9 @@
-import dotenv from "dotenv";
+//import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
 
-dotenv.config();
+//dotenv.config();
 
 const app = express();
 app.use(cors());
