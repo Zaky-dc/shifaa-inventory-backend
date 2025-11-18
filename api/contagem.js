@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import Contagem from "../models/Contagem.js";
 
-
+mongoose.connect(process.env.MONGO_URI);
 
 export default async function handler(req, res) {
   if (req.method === "POST") {
@@ -35,4 +35,5 @@ export default async function handler(req, res) {
 
   return res.status(405).end();
 }
+
 
