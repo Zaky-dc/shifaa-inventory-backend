@@ -1,57 +1,46 @@
 import mongoose from "mongoose";
-import Contagem from "../../models/Contagem.js";
+import Armazem from "../models/Armazem.js";
 
-// Evita reconexões múltiplas em ambiente serverless
-if (!mongoose.connections[0].readyState) {
-  mongoose.connect(process.env.MONGO_URI);
-}
+mongoose.connect(process.env.MONGO_URI);
 
 export default async function handler(req, res) {
-  // O Next.js pega o [data] da URL e joga no query, 
-  // mas também precisamos do 'armazem' que virá via ?armazem=...
-  const { data, armazem } = req.query;
-
-  // 🛠️ 1. TRATAMENTO DO PREFLIGHT (CORS)
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-
-  // 📝 2. GET (BUSCAR DADOS)
-  if (req.method === "GET") {
-    if (!data) return res.status(400).json({ error: "Data obrigatória." });
     
-    try {
-      // Se vier armazem na busca, filtra também, senão traz tudo do dia
-      const filtro = armazem ? { data, armazem } : { data };
-      const dados = await Contagem.find(filtro);
-      return res.status(200).json(dados);
-    } catch (err) {
-      return res.status(500).json({ error: "Erro ao buscar contagem." });
-    }
-  }
-
-  // 🗑️ 3. DELETE (APAGAR DADOS ESPECÍFICOS)
-  if (req.method === "DELETE") {
-    // AGORA EXIGIMOS DATA E ARMAZEM PARA NÃO APAGAR O DIA TODO SEM QUERER
-    if (!data || !armazem) {
-        return res.status(400).json({ error: "Necessário informar Data e Armazém para apagar." });
+    // 🛠️ 1. TRATAMENTO DO PREFLIGHT (OPTIONS) 🛠️
+    // Necessário para permitir POST/PUT/DELETE de outras origens (CORS).
+    if (req.method === 'OPTIONS') {
+        // Retorna 200 OK, confiando que o vercel.json já adicionou os cabeçalhos CORS.
+        return res.status(200).end(); 
     }
 
-    try {
-      const resultado = await Contagem.deleteMany({ data, armazem });
-      
-      if (resultado.deletedCount === 0) {
-        return res.status(404).json({ message: "Nenhum registo encontrado para apagar." });
-      }
-
-      return res.status(200).json({ 
-          message: `Sucesso! Registos de '${armazem}' em ${data} foram apagados.` 
-      });
-    } catch (err) {
-      console.error(err);
-      return res.status(500).json({ error: "Erro ao apagar contagem." });
+    // 📝 2. LÓGICA POST (CRIAR ARMÁZEM)
+    if (req.method === "POST") {
+        try {
+            const { nome } = req.body;
+            if (!nome) return res.status(400).json({ error: "Nome do armazém é obrigatório." });
+            
+            const novo = new Armazem({ nome });
+            await novo.save();
+            
+            // Retorna status 201 Created
+            return res.status(201).json({ message: "Armazém criado com sucesso!", armazem: novo });
+        } catch (err) {
+            // Pode ser erro 500 ou 409 (conflito) se usar validação de unicidade.
+            return res.status(500).json({ error: "Erro ao criar armazém." });
+        }
     }
-  }
 
-  return res.status(405).end();
+    // 📊 3. LÓGICA GET (BUSCAR ARMÁZENS)
+    if (req.method === "GET") {
+        try {
+            const armazens = await Armazem.find().sort({ nome: 1 });
+            // Retorna apenas o array de nomes
+            return res.status(200).json(armazens.map(a => a.nome)); 
+        } catch (err) {
+            return res.status(500).json({ error: "Erro ao buscar armazéns." });
+        }
+    }
+
+    // 🚫 4. TRATAMENTO DE OUTROS MÉTODOS
+    // Se o método não for OPTIONS, POST, ou GET.
+    return res.status(405).end();
 }
