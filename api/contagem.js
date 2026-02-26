@@ -12,14 +12,14 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {
     // Como os cabeçalhos CORS já estão no vercel.json, 
     // basta retornar um status 200 OK para o navegador prosseguir.
-    return res.status(200).end(); 
+    return res.status(200).end();
   }
 
   // 2. LÓGICA POST (SALVAR DADOS)
   if (req.method === "POST") {
     try {
       // O Vercel já parseia o corpo (body) para JSON.
-      const dados = req.body; 
+      const dados = req.body;
 
       if (!Array.isArray(dados) || dados.length === 0) {
         return res.status(400).json({ error: "Dados inválidos ou vazios." });
@@ -34,7 +34,7 @@ export default async function handler(req, res) {
       // Limpa dados anteriores e insere os novos
       await Contagem.deleteMany({ data, armazem });
       await Contagem.insertMany(dados);
-      
+
       return res.status(200).json({ message: `Contagem de ${data} (${armazem}) salva com sucesso!` });
 
     } catch (err) {
@@ -48,9 +48,10 @@ export default async function handler(req, res) {
     try {
       const filtro = {};
       if (req.query.armazem) filtro.armazem = req.query.armazem;
-      
+      if (req.query.data) filtro.data = req.query.data;
+
       const dados = await Contagem.find(filtro).sort({ data: -1 });
-      
+
       return res.status(200).json(dados);
 
     } catch (err) {
